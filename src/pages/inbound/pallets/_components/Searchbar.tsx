@@ -1,9 +1,7 @@
 import { Box, InputBase } from '@mui/material'
-import { usePalletsPage } from './PageContext'
 import { Search } from '@mui/icons-material'
 
 export const Searchbar = () => {
-    const ctx = usePalletsPage()
     return (
         <Box sx={{ width: '100%', my: '1rem' }}>
             <Box

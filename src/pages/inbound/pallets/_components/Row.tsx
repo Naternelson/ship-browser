@@ -1,6 +1,6 @@
 import { Box, Checkbox, Chip, ListItem, ListItemButton } from '@mui/material'
 import type { InboundPalletType } from '../types'
-import { AssignmentOutlined, Check, Print, PriorityHigh, Warning } from '@mui/icons-material'
+import { AssignmentOutlined, Warning } from '@mui/icons-material'
 import { usePalletsPage } from './PageContext'
 import { useEffect } from 'react'
 export const Row = ({ pallet }: { pallet: InboundPalletType }) => {

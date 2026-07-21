@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { usePalletsPage } from './PageContext'
 import {
     Box,
     Button,
@@ -12,16 +11,14 @@ import {
     Fade,
     FormControlLabel,
     IconButton,
-    InputBase,
-    Menu,
+
 } from '@mui/material'
-import { ArrowDropDown, Close, Filter, Search } from '@mui/icons-material'
+import { ArrowDropDown, Close, Filter } from '@mui/icons-material'
 
 export const FilterMenu = () => {
     const anchorEl = useRef<HTMLButtonElement>(null)
     const [open, setOpen] = useState(false)
 
-    const ctx = usePalletsPage()
     return (
         <Box sx={{ display: 'flex', color: 'text.secondary' }}>
             <Button

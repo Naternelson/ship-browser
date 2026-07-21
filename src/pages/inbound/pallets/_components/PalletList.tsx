@@ -1,23 +1,20 @@
 import { Box, List, Typography } from '@mui/material'
-import { useMemo } from 'react'
 
-import { getFilterValues } from '../_utils/palletSearch'
-import { FilterButton } from './FilterButton'
 import { usePalletsPage } from './PageContext'
 import { Row } from './Row'
 import { SortButton } from './SortButton'
 import { FilterMenu } from './FilterMenu'
 
 export const PalletList = () => {
-    const { rows, displayRows, search } = usePalletsPage()
+    const { displayRows } = usePalletsPage()
 
-    const assignedActive = getFilterValues(search, 'assigned').includes('true')
+    // const assignedActive = getFilterValues(search, 'assigned').includes('true')
 
-    const criticalActive = getFilterValues(search, 'priority').includes('0')
+    // const criticalActive = getFilterValues(search, 'priority').includes('0')
 
-    const assignedCount = useMemo(() => rows.filter(pallet => pallet.assignedDate !== null).length, [rows])
+    // const assignedCount = useMemo(() => rows.filter(pallet => pallet.assignedDate !== null).length, [rows])
 
-    const criticalCount = useMemo(() => rows.filter(pallet => pallet.priority === 0).length, [rows])
+    // const criticalCount = useMemo(() => rows.filter(pallet => pallet.priority === 0).length, [rows])
 
     return (
         <Box
