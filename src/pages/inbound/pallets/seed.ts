@@ -80,7 +80,7 @@ const createLocation = (state: InboundPalletType['state']): string => {
     }
 }
 
-const createQtyReceived = (state: InboundPalletType['state'], qtyExpected: number, ti: number): number => {
+const createQtyReceived = (state: InboundPalletType['state'], qtyExpected: number, _ti: number): number => {
     switch (state) {
         case 'Processing':
             return randomInt(1, Math.max(1, qtyExpected - 1))
@@ -138,7 +138,7 @@ export const seedPallets = ({ size }: SeedPalletsOptions): InboundPalletType[] =
     const expirationStart = addMonths(now, 2)
     const expirationEnd = addYears(now, 2)
 
-    return Array.from({ length: size }, (_, index) => {
+    return Array.from({ length: size }, (_, _index) => {
         const lpn = randomNumericString(12)
         const state = randomItem(PALLET_STATES)
 
