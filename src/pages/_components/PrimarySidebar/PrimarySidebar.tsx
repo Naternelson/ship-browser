@@ -1,18 +1,21 @@
 
 import {
+    ChevronRight,
+    ExpandMore,
+} from '@mui/icons-material'
+import {
     Box,
     Collapse,
+    Drawer,
     List,
     ListItemButton,
     ListItemIcon,
     ListItemText,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material'
-import {
-    ChevronRight,
-    ExpandMore,
-} from '@mui/icons-material'
+import { useTheme } from '@mui/material/styles'
 import {
     useCallback,
     useEffect,
@@ -29,6 +32,10 @@ import type {
     NavigationItem,
 } from '../../../navigation/type'
 
+const DOMAIN_BAR_WIDTH = 42
+const DOMAIN_SIDEBAR_WIDTH = 220
+const MOBILE_DRAWER_WIDTH = 260
+
 type PrimarySidebarProps = {
     navigationConfig: DomainItem[]
 }
@@ -37,6 +44,11 @@ export const PrimarySidebar = ({
     navigationConfig,
 }: PrimarySidebarProps) => {
     const location = useLocation()
+    const theme = useTheme()
+
+    const isMobile = useMediaQuery(
+        theme.breakpoints.down('md'),
+    )
 
     const routeDomain = useMemo(
         () =>
@@ -49,13 +61,15 @@ export const PrimarySidebar = ({
         [location.pathname, navigationConfig],
     )
 
-    const [activeDomainId, setActiveDomainId] = useState<
-        DomainItem['id']
-    >(
-        routeDomain?.id ??
-            navigationConfig[0]?.id ??
-            '',
-    )
+    const [activeDomainId, setActiveDomainId] =
+        useState<DomainItem['id']>(
+            routeDomain?.id ??
+                navigationConfig[0]?.id ??
+                '',
+        )
+
+    const [drawerOpen, setDrawerOpen] =
+        useState(false)
 
     useEffect(() => {
         if (routeDomain) {
@@ -63,9 +77,28 @@ export const PrimarySidebar = ({
         }
     }, [routeDomain])
 
+    /*
+     * Close the mobile drawer whenever the user
+     * navigates to another route.
+     */
+    useEffect(() => {
+        setDrawerOpen(false)
+    }, [location.pathname])
+
+    /*
+     * Ensure the temporary drawer is closed when
+     * switching back to the desktop layout.
+     */
+    useEffect(() => {
+        if (!isMobile) {
+            setDrawerOpen(false)
+        }
+    }, [isMobile])
+
     const activeDomain =
         navigationConfig.find(
-            domain => domain.id === activeDomainId,
+            domain =>
+                domain.id === activeDomainId,
         ) ??
         routeDomain ??
         navigationConfig[0]
@@ -73,9 +106,17 @@ export const PrimarySidebar = ({
     const handleDomainChange = useCallback(
         (domainId: DomainItem['id']) => {
             setActiveDomainId(domainId)
+
+            if (isMobile) {
+                setDrawerOpen(true)
+            }
         },
-        [],
+        [isMobile],
     )
+
+    const handleDrawerClose = useCallback(() => {
+        setDrawerOpen(false)
+    }, [])
 
     if (!activeDomain) {
         return null
@@ -98,10 +139,66 @@ export const PrimarySidebar = ({
                 onChange={handleDomainChange}
             />
 
-            <DomainSidebar
-                domain={activeDomain}
-                currentPath={location.pathname}
-            />
+            {/* Permanent desktop sidebar */}
+            <Box
+                sx={{
+                    display: {
+                        xs: 'none',
+                        md: 'block',
+                    },
+                    height: '100%',
+                    minHeight: 0,
+                }}
+            >
+                <DomainSidebar
+                    domain={activeDomain}
+                    currentPath={location.pathname}
+                />
+            </Box>
+
+            {/* Temporary mobile sidebar */}
+            <Drawer
+                anchor="left"
+                variant="temporary"
+                open={drawerOpen}
+                onClose={handleDrawerClose}
+                ModalProps={{
+                    keepMounted: true,
+                }}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            left: DOMAIN_BAR_WIDTH,
+                            width: MOBILE_DRAWER_WIDTH,
+                            maxWidth: `calc(100vw - ${DOMAIN_BAR_WIDTH}px)`,
+                            boxSizing: 'border-box',
+                            borderRight: '1px solid',
+                            borderColor: 'divider',
+                        },
+                    },
+                }}
+                sx={{
+                    display: {
+                        xs: 'block',
+                        md: 'none',
+                    },
+
+                    /*
+                     * Leave the domain rail uncovered
+                     * while the drawer is open.
+                     */
+                    '& .MuiBackdrop-root': {
+                        left: DOMAIN_BAR_WIDTH,
+                    },
+                }}
+            >
+                <DomainSidebar
+                    domain={activeDomain}
+                    currentPath={location.pathname}
+                    drawer
+                    onNavigate={handleDrawerClose}
+                />
+            </Drawer>
         </Box>
     )
 }
@@ -119,10 +216,17 @@ const DomainBar = ({
     navigationConfig,
     onChange,
 }: DomainBarProps) => {
+    const theme = useTheme()
+
     return (
         <Box
             sx={{
-                width: 42,
+                position: 'relative',
+                zIndex: {
+                    xs: theme.zIndex.drawer + 1,
+                    md: 'auto',
+                },
+                width: DOMAIN_BAR_WIDTH,
                 flexShrink: 0,
                 height: '100%',
                 borderRight: '1px solid',
@@ -230,11 +334,15 @@ const DomainButton = ({
 type DomainSidebarProps = {
     domain: DomainItem
     currentPath: string
+    drawer?: boolean
+    onNavigate?: () => void
 }
 
 const DomainSidebar = ({
     domain,
     currentPath,
+    drawer = false,
+    onNavigate,
 }: DomainSidebarProps) => {
     const rootItem: NavigationItem | null =
         domain.path
@@ -251,12 +359,16 @@ const DomainSidebar = ({
     return (
         <Box
             sx={{
-                width: 220,
+                width: drawer
+                    ? '100%'
+                    : DOMAIN_SIDEBAR_WIDTH,
                 flexShrink: 0,
                 height: '100%',
                 minHeight: 0,
                 overflowY: 'auto',
-                borderRight: '1px solid',
+                borderRight: drawer
+                    ? 0
+                    : '1px solid',
                 borderColor: 'divider',
                 bgcolor: 'background.paper',
             }}
@@ -291,6 +403,7 @@ const DomainSidebar = ({
                     <NavigationRow
                         item={rootItem}
                         currentPath={currentPath}
+                        onNavigate={onNavigate}
                     />
                 )}
 
@@ -299,6 +412,7 @@ const DomainSidebar = ({
                         key={item.id}
                         item={item}
                         currentPath={currentPath}
+                        onNavigate={onNavigate}
                     />
                 ))}
 
@@ -326,12 +440,14 @@ type NavigationRowProps = {
     item: NavigationItem
     currentPath: string
     depth?: number
+    onNavigate?: () => void
 }
 
 const NavigationRow = ({
     item,
     currentPath,
     depth = 0,
+    onNavigate,
 }: NavigationRowProps) => {
     const hasChildren = Boolean(
         item.children?.length,
@@ -370,6 +486,7 @@ const NavigationRow = ({
                 <ListItemButton
                     selected={selected}
                     disabled={item.disabled}
+                    aria-expanded={expanded}
                     onClick={() =>
                         setExpanded(
                             value => !value,
@@ -500,6 +617,9 @@ const NavigationRow = ({
                                     depth={
                                         depth + 1
                                     }
+                                    onNavigate={
+                                        onNavigate
+                                    }
                                 />
                             ),
                         )}
@@ -519,6 +639,7 @@ const NavigationRow = ({
             to={item.path}
             selected={itemIsActive}
             disabled={item.disabled}
+            onClick={onNavigate}
             sx={{
                 height: 27,
                 minHeight: 27,
@@ -629,6 +750,7 @@ const pathMatches = (
 
     const normalizedCurrent =
         normalizePath(currentPath)
+
     const normalizedItem =
         normalizePath(itemPath)
 
