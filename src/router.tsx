@@ -1,4 +1,5 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, createHashRouter } from 'react-router'
 import { DefaultRoute } from './pages/route'
 
-export const router = createBrowserRouter([DefaultRoute])
+const env = import.meta.env.VITE_ROUTER === 'hash' ? 'hash' : 'browser'
+export const router = env === 'hash' ? createHashRouter([DefaultRoute]) : createBrowserRouter([DefaultRoute])
