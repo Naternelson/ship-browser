@@ -35,7 +35,7 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                 <Priority priority={pallet.priority} />
                 <Typography
                     variant="subtitle1"
-                    sx={{ color: pallet.priority === -1 ? "text.disabled" : "text.primary", lineHeight: 1 }}>
+                    sx={{ color: pallet.priority === -1 ? "text.disabled" : "text.secondary", lineHeight: 1 }}>
                     {pallet.palletId}
                 </Typography>
                 <Typography
@@ -58,7 +58,7 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                     variant="body1"
                     noWrap
                     sx={{
-                        color: pallet.priority === -1 ? "text.disabled" : "text.primary",
+                        color: pallet.priority === -1 ? "text.disabled" : "text.secondary",
                         width: "100%",
                         textAlign: "left",
                         fontWeight: "bold",

@@ -1,6 +1,6 @@
 import { matchPath, NavLink, useLocation } from "react-router";
 import { defaultTabs } from "../tabs";
-import { Box,  ButtonBase, Typography } from "@mui/material";
+import { Box, ButtonBase, Typography } from "@mui/material";
 
 export const TabbarMobile = () => {
     const location = useLocation();
@@ -56,6 +56,7 @@ export const TabbarMobile = () => {
                             color: "text.secondary",
                             overflow: "hidden",
                             padding: "0.5rem",
+                            paddingBottom: "2rem",
                             "&.active": {
                                 color: "primary.main",
                             },

@@ -71,7 +71,6 @@ const NavDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =>
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        // borderBottom: "1px solid",
                         borderColor: "divider",
                     }}>
                     <Typography
@@ -127,7 +126,7 @@ const DomainButton = ({ item, onClose }: { item: DomainItem; onClose: () => void
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: "0.25rem", mx: "1rem" }}>
             <ButtonBase
-                sx={{ gap: "0.25rem", display: "flex", justifyContent: "flex-start" }}
+                sx={{ gap: "0.25rem", display: "flex", justifyContent: "flex-start", p: "1rem" }}
                 onClick={() => {
                     setOpen((p) => !p);
                 }}>
@@ -206,7 +205,7 @@ const NavButton = ({
         width: "100%",
         minWidth: 0,
         justifyContent: "flex-start",
-        py: 0.5,
+        py: 1,
         px: 1,
         gap: 0.5,
         color: "text.secondary",
