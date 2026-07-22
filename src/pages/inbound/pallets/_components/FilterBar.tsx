@@ -6,12 +6,12 @@ export const FilterBarMobile = () => {
         <Box
             sx={{
                 px: "1rem",
-                borderBottom: "2px solid",
-                borderColor: "primary.main",
                 paddingBottom: "0.5rem",
                 gap: "0.5rem",
                 display: "flex",
                 flexDirection: "column",
+                boxShadow: (t) =>t.shadows[5]
+                ,zIndex: 1 
             }}>
             <Box sx={{ height: "40ox", overflowX: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <ButtonBase
