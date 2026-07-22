@@ -1,5 +1,12 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
+import { NavLink } from "react-router";
 
 export const InboundPalletDetailPage = () => {
-    return <Box>Hello World, Inbound Pallet Detail Page</Box>;
+    return (
+        <Box>
+            <Button component={NavLink} to={".."} relative="path">
+                Back to List
+            </Button>
+        </Box>
+    );
 };

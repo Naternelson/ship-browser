@@ -24,9 +24,9 @@ const colors = {
     },
 
     text: {
-        primary: "#F8FAFC",
-        secondary: "#B3C0D1",
-        disabled: "#66758A",
+        primary: "#E2E8F0",
+        secondary: "#94A3B8",
+        disabled: "#58677A",
     },
 
     divider: "#26364D",

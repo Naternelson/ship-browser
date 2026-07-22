@@ -19,8 +19,8 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                 flexDirection: "row",
                 justifyContent: "flex-start",
                 alignItems: "center",
-                gap: ".25rem",
-
+                gap: ".5rem",
+                py: "0.5rem",
                 color: pallet.priority === -1 ? (t) => `${t.palette.action.disabled} !important` : "text.secondary",
             }}>
             <Box
@@ -78,15 +78,15 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
 
                 <Chip label={pallet.location} />
             </Box>
-            <Box sx={{  px: 1, alignItems: "center" }}>{pallet.state}</Box>
+            <Box sx={{ px: 1, alignItems: "center" }}>{pallet.state}</Box>
         </MobileButtonBase>
     );
 };
 
 const Priority = ({ priority }: { priority: number }) => {
-    if (priority === -1) return <Block fontSize="medium" sx={{ color: "text.secondary" }} />;
-    if (priority === 0) return <Warning fontSize="medium" color={"error"} />;
-    if (priority === 1) return <LocalFireDepartmentRounded fontSize="medium" color="warning" />;
+    if (priority === -1) return <Block fontSize="small" sx={{ color: "text.secondary" }} />;
+    if (priority === 0) return <Warning fontSize="small" color={"error"} />;
+    if (priority === 1) return <LocalFireDepartmentRounded fontSize="small" color="warning" />;
     return (
         <Typography variant="h3" sx={{ color: "text.secondary", lineHeight: 1 }}>
             {priority.toLocaleString()}
