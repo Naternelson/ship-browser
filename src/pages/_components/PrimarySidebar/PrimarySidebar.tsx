@@ -1,12 +1,9 @@
-
-import {
-    ChevronRight,
-    ExpandMore,
-} from '@mui/icons-material'
+import { ChevronRight, Close, ExpandMore, Menu as MenuIcon } from "@mui/icons-material";
 import {
     Box,
     Collapse,
     Drawer,
+    IconButton,
     List,
     ListItemButton,
     ListItemIcon,
@@ -14,112 +11,77 @@ import {
     Tooltip,
     Typography,
     useMediaQuery,
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react'
-import {
-    NavLink,
-    useLocation,
-} from 'react-router'
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { NavLink, useLocation } from "react-router";
 
-import type {
-    DomainItem,
-    NavigationItem,
-} from '../../../navigation/type'
+import type { DomainItem, NavigationItem } from "../../../navigation/type";
 
-const DOMAIN_BAR_WIDTH = 42
-const DOMAIN_SIDEBAR_WIDTH = 220
-const MOBILE_DRAWER_WIDTH = 260
+const DOMAIN_BAR_WIDTH = 42;
+const DOMAIN_SIDEBAR_WIDTH = 220;
+const MOBILE_DRAWER_WIDTH = 300;
+const MOBILE_TOP_BAR_HEIGHT = 48;
 
-type PrimarySidebarProps = {
-    navigationConfig: DomainItem[]
-}
+type PrimaryNavigationProps = {
+    navigationConfig: DomainItem[];
+};
 
-export const PrimarySidebar = ({
-    navigationConfig,
-}: PrimarySidebarProps) => {
-    const location = useLocation()
-    const theme = useTheme()
+/**
+ * Responsive navigation entry point.
+ *
+ * Desktop:
+ * - permanent domain rail
+ * - permanent domain sidebar
+ *
+ * Mobile:
+ * - top navigation bar
+ * - temporary drawer containing domains and navigation
+ */
+export const PrimarySidebar = ({ navigationConfig }: PrimaryNavigationProps) => {
+    const theme = useTheme();
 
-    const isMobile = useMediaQuery(
-        theme.breakpoints.down('md'),
-    )
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+    if (isMobile) {
+        return <MobilePrimaryNavigation navigationConfig={navigationConfig} />;
+    }
+
+    return <DesktopPrimarySidebar navigationConfig={navigationConfig} />;
+};
+
+/**
+ * Desktop-only navigation.
+ *
+ * This component does not contain any mobile drawer or
+ * responsive behavior.
+ */
+export const DesktopPrimarySidebar = ({ navigationConfig }: PrimaryNavigationProps) => {
+    const location = useLocation();
 
     const routeDomain = useMemo(
-        () =>
-            navigationConfig.find(domain =>
-                domainContainsPath(
-                    domain,
-                    location.pathname,
-                ),
-            ),
+        () => findDomainForPath(navigationConfig, location.pathname),
         [location.pathname, navigationConfig],
-    )
+    );
 
-    const [activeDomainId, setActiveDomainId] =
-        useState<DomainItem['id']>(
-            routeDomain?.id ??
-                navigationConfig[0]?.id ??
-                '',
-        )
-
-    const [drawerOpen, setDrawerOpen] =
-        useState(false)
+    const [activeDomainId, setActiveDomainId] = useState<DomainItem["id"]>(
+        routeDomain?.id ?? navigationConfig[0]?.id ?? "",
+    );
 
     useEffect(() => {
         if (routeDomain) {
-            setActiveDomainId(routeDomain.id)
+            setActiveDomainId(routeDomain.id);
         }
-    }, [routeDomain])
+    }, [routeDomain]);
 
-    /*
-     * Close the mobile drawer whenever the user
-     * navigates to another route.
-     */
-    useEffect(() => {
-        setDrawerOpen(false)
-    }, [location.pathname])
-
-    /*
-     * Ensure the temporary drawer is closed when
-     * switching back to the desktop layout.
-     */
-    useEffect(() => {
-        if (!isMobile) {
-            setDrawerOpen(false)
-        }
-    }, [isMobile])
-
-    const activeDomain =
-        navigationConfig.find(
-            domain =>
-                domain.id === activeDomainId,
-        ) ??
-        routeDomain ??
-        navigationConfig[0]
-
-    const handleDomainChange = useCallback(
-        (domainId: DomainItem['id']) => {
-            setActiveDomainId(domainId)
-
-            if (isMobile) {
-                setDrawerOpen(true)
-            }
-        },
-        [isMobile],
-    )
-
-    const handleDrawerClose = useCallback(() => {
-        setDrawerOpen(false)
-    }, [])
+    const activeDomain = getActiveDomain({
+        navigationConfig,
+        activeDomainId,
+        routeDomain,
+    });
 
     if (!activeDomain) {
-        return null
+        return null;
     }
 
     return (
@@ -127,358 +89,509 @@ export const PrimarySidebar = ({
             component="nav"
             aria-label="Primary navigation"
             sx={{
-                display: 'flex',
-                height: '100%',
+                display: "flex",
+                width: DOMAIN_BAR_WIDTH + DOMAIN_SIDEBAR_WIDTH,
+                height: "100%",
                 minHeight: 0,
-                overflow: 'hidden',
-            }}
-        >
-            <DomainBar
-                activeDomainId={activeDomain.id}
+                flexShrink: 0,
+                overflow: "hidden",
+            }}>
+            <DesktopDomainBar
                 navigationConfig={navigationConfig}
-                onChange={handleDomainChange}
+                activeDomainId={activeDomain.id}
+                onChange={setActiveDomainId}
             />
 
-            {/* Permanent desktop sidebar */}
+            <DomainSidebar domain={activeDomain} currentPath={location.pathname} />
+        </Box>
+    );
+};
+
+/**
+ * Mobile-only navigation.
+ *
+ * Displays a top bar. The menu button opens a drawer
+ * containing both domain selection and domain navigation.
+ */
+export const MobilePrimaryNavigation = ({ navigationConfig }: PrimaryNavigationProps) => {
+    const location = useLocation();
+
+    const routeDomain = useMemo(
+        () => findDomainForPath(navigationConfig, location.pathname),
+        [location.pathname, navigationConfig],
+    );
+
+    const [activeDomainId, setActiveDomainId] = useState<DomainItem["id"]>(
+        routeDomain?.id ?? navigationConfig[0]?.id ?? "",
+    );
+
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    useEffect(() => {
+        if (routeDomain) {
+            setActiveDomainId(routeDomain.id);
+        }
+    }, [routeDomain]);
+
+    /*
+     * Close the drawer after navigation.
+     */
+    useEffect(() => {
+        setDrawerOpen(false);
+    }, [location.pathname]);
+
+    const activeDomain = getActiveDomain({
+        navigationConfig,
+        activeDomainId,
+        routeDomain,
+    });
+
+    const handleClose = useCallback(() => {
+        setDrawerOpen(false);
+    }, []);
+
+    if (!activeDomain) {
+        return null;
+    }
+
+    const ActiveDomainIcon = activeDomain.icon;
+
+    return (
+        <>
             <Box
+                component="header"
                 sx={{
-                    display: {
-                        xs: 'none',
-                        md: 'block',
-                    },
-                    height: '100%',
-                    minHeight: 0,
-                }}
-            >
-                <DomainSidebar
-                    domain={activeDomain}
-                    currentPath={location.pathname}
+                    position: "relative",
+                    zIndex: (theme) => theme.zIndex.appBar,
+                    height: MOBILE_TOP_BAR_HEIGHT,
+                    minHeight: MOBILE_TOP_BAR_HEIGHT,
+                    px: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: "background.paper",
+                }}>
+                <IconButton
+                    aria-label="Open navigation"
+                    onClick={() => {
+                        setDrawerOpen(true);
+                    }}
+                    size="small">
+                    <MenuIcon />
+                </IconButton>
+
+                <ActiveDomainIcon
+                    sx={{
+                        ml: 0.5,
+                        fontSize: 19,
+                        color: "primary.main",
+                    }}
                 />
+
+                <Typography
+                    variant="subtitle2"
+                    noWrap
+                    sx={{
+                        minWidth: 0,
+                        color: "text.primary",
+                    }}>
+                    {activeDomain.label}
+                </Typography>
             </Box>
 
-            {/* Temporary mobile sidebar */}
             <Drawer
                 anchor="left"
                 variant="temporary"
                 open={drawerOpen}
-                onClose={handleDrawerClose}
+                onClose={handleClose}
                 ModalProps={{
                     keepMounted: true,
                 }}
                 slotProps={{
                     paper: {
                         sx: {
-                            left: DOMAIN_BAR_WIDTH,
                             width: MOBILE_DRAWER_WIDTH,
-                            maxWidth: `calc(100vw - ${DOMAIN_BAR_WIDTH}px)`,
-                            boxSizing: 'border-box',
-                            borderRight: '1px solid',
-                            borderColor: 'divider',
+                            maxWidth: "88vw",
+                            boxSizing: "border-box",
+                            bgcolor: "background.paper",
+                            backgroundImage: "none",
                         },
                     },
-                }}
-                sx={{
-                    display: {
-                        xs: 'block',
-                        md: 'none',
-                    },
-
-                    /*
-                     * Leave the domain rail uncovered
-                     * while the drawer is open.
-                     */
-                    '& .MuiBackdrop-root': {
-                        left: DOMAIN_BAR_WIDTH,
-                    },
-                }}
-            >
-                <DomainSidebar
-                    domain={activeDomain}
+                }}>
+                <MobileDrawerContent
+                    navigationConfig={navigationConfig}
+                    activeDomain={activeDomain}
+                    activeDomainId={activeDomain.id}
                     currentPath={location.pathname}
-                    drawer
-                    onNavigate={handleDrawerClose}
+                    onDomainChange={setActiveDomainId}
+                    onClose={handleClose}
                 />
             </Drawer>
-        </Box>
-    )
-}
+        </>
+    );
+};
 
-type DomainBarProps = {
-    activeDomainId: DomainItem['id']
-    navigationConfig: DomainItem[]
-    onChange: (
-        domainId: DomainItem['id'],
-    ) => void
-}
+type DesktopDomainBarProps = {
+    activeDomainId: DomainItem["id"];
+    navigationConfig: DomainItem[];
+    onChange: (domainId: DomainItem["id"]) => void;
+};
 
-const DomainBar = ({
-    activeDomainId,
-    navigationConfig,
-    onChange,
-}: DomainBarProps) => {
-    const theme = useTheme()
-
+const DesktopDomainBar = ({ activeDomainId, navigationConfig, onChange }: DesktopDomainBarProps) => {
     return (
         <Box
             sx={{
-                position: 'relative',
-                zIndex: {
-                    xs: theme.zIndex.drawer + 1,
-                    md: 'auto',
-                },
                 width: DOMAIN_BAR_WIDTH,
                 flexShrink: 0,
-                height: '100%',
-                borderRight: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-                display: 'flex',
-                flexDirection: 'column',
-            }}
-        >
-            {navigationConfig.map(domain => (
-                <DomainButton
+                height: "100%",
+                borderRight: "1px solid",
+                borderColor: "divider",
+                bgcolor: "background.paper",
+                display: "flex",
+                flexDirection: "column",
+            }}>
+            {navigationConfig.map((domain) => (
+                <DesktopDomainButton
                     key={domain.id}
                     domain={domain}
-                    active={
-                        activeDomainId === domain.id
-                    }
+                    active={activeDomainId === domain.id}
                     onChange={onChange}
                 />
             ))}
         </Box>
-    )
-}
+    );
+};
 
-type DomainButtonProps = {
-    domain: DomainItem
-    active: boolean
-    onChange: (
-        domainId: DomainItem['id'],
-    ) => void
-}
+type DesktopDomainButtonProps = {
+    domain: DomainItem;
+    active: boolean;
+    onChange: (domainId: DomainItem["id"]) => void;
+};
 
-const DomainButton = ({
-    domain,
-    active,
-    onChange,
-}: DomainButtonProps) => {
-    const Icon = domain.icon
+const DesktopDomainButton = ({ domain, active, onChange }: DesktopDomainButtonProps) => {
+    const Icon = domain.icon;
 
     return (
-        <Tooltip
-            title={domain.label}
-            placement="right"
-        >
+        <Tooltip title={domain.label} placement="right">
             <Box
                 component="button"
                 type="button"
                 aria-label={domain.label}
                 aria-pressed={active}
                 disabled={domain.disabled}
-                onClick={() =>
-                    onChange(domain.id)
-                }
+                onClick={() => {
+                    onChange(domain.id);
+                }}
                 sx={{
-                    width: '100%',
-                    height: 36,
+                    width: "100%",
+                    height: 38,
                     flexShrink: 0,
                     p: 0,
                     border: 0,
-                    borderLeft: '2px solid',
-                    borderLeftColor: active
-                        ? 'text.primary'
-                        : 'transparent',
+                    borderLeft: "2px solid",
+                    borderLeftColor: active ? "primary.main" : "transparent",
                     borderRadius: 0,
-                    color: active
-                        ? 'text.primary'
-                        : 'text.secondary',
-                    bgcolor: active
-                        ? 'action.selected'
-                        : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: domain.disabled
-                        ? 'default'
-                        : 'pointer',
+                    color: active ? "text.primary" : "text.secondary",
+                    bgcolor: active ? "action.selected" : "transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: domain.disabled ? "default" : "pointer",
 
-                    '&:hover': {
-                        bgcolor: domain.disabled
-                            ? 'transparent'
-                            : 'action.hover',
-                        color: domain.disabled
-                            ? 'text.disabled'
-                            : 'text.primary',
+                    "&:hover": {
+                        bgcolor: domain.disabled ? "transparent" : "action.hover",
+                        color: domain.disabled ? "text.disabled" : "text.primary",
                     },
 
-                    '&:focus-visible': {
-                        outline: '1px solid',
-                        outlineColor:
-                            'text.secondary',
+                    "&:focus-visible": {
+                        outline: "1px solid",
+                        outlineColor: "primary.main",
                         outlineOffset: -1,
                     },
 
-                    '&:disabled': {
-                        color: 'text.disabled',
+                    "&:disabled": {
+                        color: "text.disabled",
                         opacity: 0.6,
                     },
-                }}
-            >
+                }}>
                 <Icon sx={{ fontSize: 19 }} />
             </Box>
         </Tooltip>
-    )
-}
+    );
+};
+
+type MobileDrawerContentProps = {
+    navigationConfig: DomainItem[];
+    activeDomain: DomainItem;
+    activeDomainId: DomainItem["id"];
+    currentPath: string;
+    onDomainChange: (domainId: DomainItem["id"]) => void;
+    onClose: () => void;
+};
+
+const MobileDrawerContent = ({
+    navigationConfig,
+    activeDomain,
+    activeDomainId,
+    currentPath,
+    onDomainChange,
+    onClose,
+}: MobileDrawerContentProps) => {
+    return (
+        <Box
+            component="nav"
+            aria-label="Mobile primary navigation"
+            sx={{
+                height: "100%",
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+            }}>
+            <Box
+                sx={{
+                    height: MOBILE_TOP_BAR_HEIGHT,
+                    minHeight: MOBILE_TOP_BAR_HEIGHT,
+                    px: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                }}>
+                <Typography
+                    variant="subtitle1"
+                    sx={{
+                        fontWeight: 700,
+                    }}>
+                    Navigation
+                </Typography>
+
+                <IconButton aria-label="Close navigation" onClick={onClose} size="small">
+                    <Close />
+                </IconButton>
+            </Box>
+
+            <MobileDomainSelector
+                navigationConfig={navigationConfig}
+                activeDomainId={activeDomainId}
+                onChange={onDomainChange}
+            />
+
+            <Box
+                sx={{
+                    minHeight: 0,
+                    flex: 1,
+                    overflow: "hidden",
+                }}>
+                <DomainSidebar domain={activeDomain} currentPath={currentPath} drawer onNavigate={onClose} />
+            </Box>
+        </Box>
+    );
+};
+
+type MobileDomainSelectorProps = {
+    activeDomainId: DomainItem["id"];
+    navigationConfig: DomainItem[];
+    onChange: (domainId: DomainItem["id"]) => void;
+};
+
+const MobileDomainSelector = ({ activeDomainId, navigationConfig, onChange }: MobileDomainSelectorProps) => {
+    return (
+        <Box
+            sx={{
+                px: 1,
+                py: 1,
+                display: "flex",
+                gap: 0.5,
+                overflowX: "auto",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+
+                "&::-webkit-scrollbar": {
+                    height: 4,
+                },
+            }}>
+            {navigationConfig.map((domain) => {
+                const Icon = domain.icon;
+                const active = domain.id === activeDomainId;
+
+                return (
+                    <Box
+                        key={domain.id}
+                        component="button"
+                        type="button"
+                        aria-pressed={active}
+                        disabled={domain.disabled}
+                        onClick={() => {
+                            onChange(domain.id);
+                        }}
+                        sx={{
+                            minWidth: 72,
+                            px: 1,
+                            py: 0.75,
+                            border: "1px solid",
+                            borderColor: active ? "primary.main" : "divider",
+                            borderRadius: 1,
+                            bgcolor: active ? "action.selected" : "transparent",
+                            color: active ? "text.primary" : "text.secondary",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 0.5,
+                            cursor: domain.disabled ? "default" : "pointer",
+
+                            "&:hover": {
+                                bgcolor: domain.disabled ? "transparent" : "action.hover",
+                                color: domain.disabled ? "text.disabled" : "text.primary",
+                            },
+
+                            "&:focus-visible": {
+                                outline: "2px solid",
+                                outlineColor: "primary.main",
+                                outlineOffset: 1,
+                            },
+
+                            "&:disabled": {
+                                color: "text.disabled",
+                                opacity: 0.55,
+                            },
+                        }}>
+                        <Icon
+                            sx={{
+                                fontSize: 20,
+                            }}
+                        />
+
+                        <Typography
+                            component="span"
+                            variant="caption"
+                            noWrap
+                            sx={{
+                                width: "100%",
+                                color: "inherit",
+                                fontSize: "0.6875rem",
+                                fontWeight: active ? 600 : 500,
+                                textAlign: "center",
+                            }}>
+                            {domain.label}
+                        </Typography>
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+};
 
 type DomainSidebarProps = {
-    domain: DomainItem
-    currentPath: string
-    drawer?: boolean
-    onNavigate?: () => void
-}
+    domain: DomainItem;
+    currentPath: string;
+    drawer?: boolean;
+    onNavigate?: () => void;
+};
 
-const DomainSidebar = ({
-    domain,
-    currentPath,
-    drawer = false,
-    onNavigate,
-}: DomainSidebarProps) => {
-    const rootItem: NavigationItem | null =
-        domain.path
-            ? {
-                  id: `${domain.id}-root`,
-                  label: domain.label,
-                  path: domain.path,
-                  icon: domain.icon,
-                  badge: domain.badge,
-                  disabled: domain.disabled,
-              }
-            : null
+const DomainSidebar = ({ domain, currentPath, drawer = false, onNavigate }: DomainSidebarProps) => {
+    const rootItem: NavigationItem | null = domain.path
+        ? {
+              id: `${domain.id}-root`,
+              label: domain.label,
+              path: domain.path,
+              icon: domain.icon,
+              badge: domain.badge,
+              disabled: domain.disabled,
+          }
+        : null;
 
     return (
         <Box
             sx={{
-                width: drawer
-                    ? '100%'
-                    : DOMAIN_SIDEBAR_WIDTH,
-                flexShrink: 0,
-                height: '100%',
+                width: drawer ? "100%" : DOMAIN_SIDEBAR_WIDTH,
+                height: "100%",
                 minHeight: 0,
-                overflowY: 'auto',
-                borderRight: drawer
-                    ? 0
-                    : '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-            }}
-        >
+                flexShrink: 0,
+                overflowY: "auto",
+                borderRight: drawer ? 0 : "1px solid",
+                borderColor: "divider",
+                bgcolor: "background.paper",
+            }}>
             <Box
                 sx={{
-                    height: 34,
+                    height: 36,
                     px: 1.25,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                }}
-            >
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                    bgcolor: "background.paper",
+                }}>
                 <Typography
                     variant="caption"
                     noWrap
                     sx={{
-                        fontSize: '0.6875rem',
-                        fontWeight: 600,
-                        color: 'text.secondary',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.06em',
-                    }}
-                >
+                        fontSize: "0.6875rem",
+                        fontWeight: 700,
+                        color: "text.secondary",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                    }}>
                     {domain.label}
                 </Typography>
             </Box>
 
             <List disablePadding>
-                {rootItem && (
-                    <NavigationRow
-                        item={rootItem}
-                        currentPath={currentPath}
-                        onNavigate={onNavigate}
-                    />
-                )}
+                {rootItem && <NavigationRow item={rootItem} currentPath={currentPath} onNavigate={onNavigate} />}
 
-                {domain.children?.map(item => (
-                    <NavigationRow
-                        key={item.id}
-                        item={item}
-                        currentPath={currentPath}
-                        onNavigate={onNavigate}
-                    />
+                {domain.children?.map((item) => (
+                    <NavigationRow key={item.id} item={item} currentPath={currentPath} onNavigate={onNavigate} />
                 ))}
 
-                {!rootItem &&
-                    !domain.children?.length && (
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                                display: 'block',
-                                px: 1.25,
-                                py: 1,
-                                fontSize: '0.75rem',
-                            }}
-                        >
-                            No navigation items
-                        </Typography>
-                    )}
+                {!rootItem && !domain.children?.length && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                            display: "block",
+                            px: 1.25,
+                            py: 1,
+                        }}>
+                        No navigation items
+                    </Typography>
+                )}
             </List>
         </Box>
-    )
-}
+    );
+};
 
 type NavigationRowProps = {
-    item: NavigationItem
-    currentPath: string
-    depth?: number
-    onNavigate?: () => void
-}
+    item: NavigationItem;
+    currentPath: string;
+    depth?: number;
+    onNavigate?: () => void;
+};
 
-const NavigationRow = ({
-    item,
-    currentPath,
-    depth = 0,
-    onNavigate,
-}: NavigationRowProps) => {
-    const hasChildren = Boolean(
-        item.children?.length,
-    )
+const NavigationRow = ({ item, currentPath, depth = 0, onNavigate }: NavigationRowProps) => {
+    const hasChildren = Boolean(item.children?.length);
 
-    const itemIsActive = pathMatches(
-        currentPath,
-        item.path,
-    )
+    const itemIsActive = pathMatches(currentPath, item.path);
 
-    const childIsActive =
-        item.children?.some(child =>
-            itemContainsPath(
-                child,
-                currentPath,
-            ),
-        ) ?? false
+    const childIsActive = item.children?.some((child) => itemContainsPath(child, currentPath)) ?? false;
 
-    const selected =
-        itemIsActive || childIsActive
+    const selected = itemIsActive || childIsActive;
 
-    const [expanded, setExpanded] =
-        useState(childIsActive)
+    const [expanded, setExpanded] = useState(childIsActive);
 
     useEffect(() => {
         if (childIsActive) {
-            setExpanded(true)
+            setExpanded(true);
         }
-    }, [childIsActive])
+    }, [childIsActive]);
 
-    const Icon = item.icon
+    const Icon = item.icon;
 
     if (hasChildren) {
         return (
@@ -487,335 +600,241 @@ const NavigationRow = ({
                     selected={selected}
                     disabled={item.disabled}
                     aria-expanded={expanded}
-                    onClick={() =>
-                        setExpanded(
-                            value => !value,
-                        )
-                    }
-                    sx={{
-                        height: 27,
-                        minHeight: 27,
-                        py: 0,
-                        pr: 0.75,
-                        pl:
-                            0.5 +
-                            depth * 1.75,
-                        borderRadius: 0,
-                        color: selected
-                            ? 'text.primary'
-                            : 'text.secondary',
-
-                        '&:hover': {
-                            bgcolor:
-                                'action.hover',
-                            color: 'text.primary',
-                        },
-
-                        '&.Mui-selected': {
-                            bgcolor:
-                                'transparent',
-                            color: 'text.primary',
-
-                            '&:hover': {
-                                bgcolor:
-                                    'action.hover',
-                            },
-                        },
-
-                        '&.Mui-focusVisible': {
-                            outline:
-                                '1px solid',
-                            outlineColor:
-                                'text.secondary',
-                            outlineOffset: -1,
-                        },
+                    onClick={() => {
+                        setExpanded((value) => !value);
                     }}
-                >
+                    sx={getNavigationRowStyles({
+                        depth,
+                        selected,
+                        expandable: true,
+                    })}>
                     <Box
                         sx={{
-                            width: 17,
+                            width: 18,
                             flexShrink: 0,
-                            display: 'flex',
-                            alignItems:
-                                'center',
-                            justifyContent:
-                                'center',
-                        }}
-                    >
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}>
                         {expanded ? (
                             <ExpandMore
                                 sx={{
-                                    fontSize: 15,
+                                    fontSize: 16,
                                 }}
                             />
                         ) : (
                             <ChevronRight
                                 sx={{
-                                    fontSize: 15,
+                                    fontSize: 16,
                                 }}
                             />
                         )}
                     </Box>
 
-                    {Icon && (
-                        <ListItemIcon
-                            sx={{
-                                minWidth: 23,
-                                color: 'inherit',
-                            }}
-                        >
-                            <Icon
-                                sx={{
-                                    fontSize: 16,
-                                }}
-                            />
-                        </ListItemIcon>
-                    )}
+                    {Icon && <NavigationIcon Icon={Icon} />}
 
-                    <ListItemText
-                        primary={item.label}
-                        slotProps={{
-                            primary: {
-                                noWrap: true,
-                                sx: {
-                                    fontSize:
-                                        '0.75rem',
-                                    lineHeight: 1,
-                                    fontWeight:
-                                        selected
-                                            ? 500
-                                            : 400,
-                                },
-                            },
-                        }}
-                    />
+                    <NavigationLabel label={item.label} selected={selected} />
 
-                    {item.badge !==
-                        undefined && (
-                        <NavigationBadge
-                            value={item.badge}
-                        />
-                    )}
+                    {item.badge !== undefined && <NavigationBadge value={item.badge} />}
                 </ListItemButton>
 
-                <Collapse
-                    in={expanded}
-                    timeout="auto"
-                    unmountOnExit
-                >
+                <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <List disablePadding>
-                        {item.children?.map(
-                            child => (
-                                <NavigationRow
-                                    key={
-                                        child.id
-                                    }
-                                    item={child}
-                                    currentPath={
-                                        currentPath
-                                    }
-                                    depth={
-                                        depth + 1
-                                    }
-                                    onNavigate={
-                                        onNavigate
-                                    }
-                                />
-                            ),
-                        )}
+                        {item.children?.map((child) => (
+                            <NavigationRow
+                                key={child.id}
+                                item={child}
+                                currentPath={currentPath}
+                                depth={depth + 1}
+                                onNavigate={onNavigate}
+                            />
+                        ))}
                     </List>
                 </Collapse>
             </>
-        )
+        );
     }
 
     if (!item.path) {
-        return null
+        return null;
     }
 
     return (
         <ListItemButton
             component={NavLink}
             to={item.path}
+            end={normalizePath(item.path) === "/"}
             selected={itemIsActive}
             disabled={item.disabled}
             onClick={onNavigate}
+            sx={getNavigationRowStyles({
+                depth,
+                selected: itemIsActive,
+                expandable: false,
+            })}>
+            {Icon && <NavigationIcon Icon={Icon} />}
+
+            <NavigationLabel label={item.label} selected={itemIsActive} />
+
+            {item.badge !== undefined && <NavigationBadge value={item.badge} />}
+        </ListItemButton>
+    );
+};
+
+type NavigationIconProps = {
+    Icon: NavigationItem["icon"];
+};
+
+const NavigationIcon = ({ Icon }: NavigationIconProps) => {
+    if (!Icon) {
+        return null;
+    }
+
+    return (
+        <ListItemIcon
             sx={{
-                height: 27,
-                minHeight: 27,
-                py: 0,
-                pr: 0.75,
-                pl: 1 + depth * 1.75,
-                borderRadius: 0,
-                color: itemIsActive
-                    ? 'text.primary'
-                    : 'text.secondary',
+                minWidth: 24,
+                color: "inherit",
+            }}>
+            <Icon sx={{ fontSize: 16 }} />
+        </ListItemIcon>
+    );
+};
 
-                '&:hover': {
-                    bgcolor: 'action.hover',
-                    color: 'text.primary',
-                },
+type NavigationLabelProps = {
+    label: string;
+    selected: boolean;
+};
 
-                '&.Mui-selected': {
-                    bgcolor: 'action.selected',
-                    color: 'text.primary',
-
-                    '&:hover': {
-                        bgcolor:
-                            'action.selected',
+const NavigationLabel = ({ label, selected }: NavigationLabelProps) => {
+    return (
+        <ListItemText
+            primary={label}
+            slotProps={{
+                primary: {
+                    noWrap: true,
+                    sx: {
+                        fontSize: "0.75rem",
+                        lineHeight: 1,
+                        fontWeight: selected ? 600 : 400,
                     },
-                },
-
-                '&.active': {
-                    bgcolor: 'action.selected',
-                    color: 'text.primary',
-                },
-
-                '&.Mui-focusVisible': {
-                    outline: '1px solid',
-                    outlineColor:
-                        'text.secondary',
-                    outlineOffset: -1,
                 },
             }}
-        >
-            {Icon && (
-                <ListItemIcon
-                    sx={{
-                        minWidth: 23,
-                        color: 'inherit',
-                    }}
-                >
-                    <Icon
-                        sx={{ fontSize: 16 }}
-                    />
-                </ListItemIcon>
-            )}
+        />
+    );
+};
 
-            <ListItemText
-                primary={item.label}
-                slotProps={{
-                    primary: {
-                        noWrap: true,
-                        sx: {
-                            fontSize:
-                                '0.75rem',
-                            lineHeight: 1,
-                            fontWeight:
-                                itemIsActive
-                                    ? 500
-                                    : 400,
-                        },
-                    },
-                }}
-            />
-
-            {item.badge !== undefined && (
-                <NavigationBadge
-                    value={item.badge}
-                />
-            )}
-        </ListItemButton>
-    )
-}
-
-const NavigationBadge = ({
-    value,
-}: {
-    value: string | number
-}) => {
+const NavigationBadge = ({ value }: { value: string | number }) => {
     return (
         <Typography
             component="span"
             sx={{
                 ml: 0.5,
                 flexShrink: 0,
-                fontSize: '0.6875rem',
+                fontSize: "0.6875rem",
                 lineHeight: 1,
-                color: 'text.secondary',
-            }}
-        >
+                color: "text.secondary",
+            }}>
             {value}
         </Typography>
-    )
-}
+    );
+};
 
-const pathMatches = (
-    currentPath: string,
-    itemPath?: string,
-): boolean => {
+type NavigationRowStyleOptions = {
+    depth: number;
+    selected: boolean;
+    expandable: boolean;
+};
+
+const getNavigationRowStyles = ({ depth, selected, expandable }: NavigationRowStyleOptions) => ({
+    height: 30,
+    minHeight: 30,
+    py: 0,
+    pr: 0.75,
+    pl: expandable ? 0.5 + depth * 1.75 : 1 + depth * 1.75,
+    borderRadius: 0,
+    color: selected ? "text.primary" : "text.secondary",
+
+    "&:hover": {
+        bgcolor: "action.hover",
+        color: "text.primary",
+    },
+
+    "&.Mui-selected": {
+        bgcolor: expandable ? "transparent" : "action.selected",
+        color: "text.primary",
+
+        "&:hover": {
+            bgcolor: expandable ? "action.hover" : "action.selected",
+        },
+    },
+
+    "&.active": {
+        bgcolor: expandable ? "transparent" : "action.selected",
+        color: "text.primary",
+    },
+
+    "&.Mui-focusVisible": {
+        outline: "1px solid",
+        outlineColor: "primary.main",
+        outlineOffset: -1,
+    },
+});
+
+type ActiveDomainOptions = {
+    navigationConfig: DomainItem[];
+    activeDomainId: DomainItem["id"];
+    routeDomain?: DomainItem;
+};
+
+const getActiveDomain = ({
+    navigationConfig,
+    activeDomainId,
+    routeDomain,
+}: ActiveDomainOptions): DomainItem | undefined => {
+    return navigationConfig.find((domain) => domain.id === activeDomainId) ?? routeDomain ?? navigationConfig[0];
+};
+
+const findDomainForPath = (navigationConfig: DomainItem[], currentPath: string): DomainItem | undefined => {
+    return navigationConfig.find((domain) => domainContainsPath(domain, currentPath));
+};
+
+const pathMatches = (currentPath: string, itemPath?: string): boolean => {
     if (!itemPath) {
-        return false
+        return false;
     }
 
-    const normalizedCurrent =
-        normalizePath(currentPath)
+    const normalizedCurrent = normalizePath(currentPath);
 
-    const normalizedItem =
-        normalizePath(itemPath)
+    const normalizedItem = normalizePath(itemPath);
 
-    return (
-        normalizedCurrent ===
-            normalizedItem ||
-        normalizedCurrent.startsWith(
-            `${normalizedItem}/`,
-        )
-    )
-}
-
-const normalizePath = (
-    path: string,
-): string => {
-    if (path === '/') {
-        return path
+    if (normalizedItem === "/") {
+        return normalizedCurrent === "/";
     }
 
-    return path.replace(/\/+$/, '')
-}
+    return normalizedCurrent === normalizedItem || normalizedCurrent.startsWith(`${normalizedItem}/`);
+};
 
-const itemContainsPath = (
-    item: NavigationItem,
-    currentPath: string,
-): boolean => {
-    if (
-        pathMatches(
-            currentPath,
-            item.path,
-        )
-    ) {
-        return true
+const normalizePath = (path: string): string => {
+    if (path === "/") {
+        return path;
     }
 
-    return (
-        item.children?.some(child =>
-            itemContainsPath(
-                child,
-                currentPath,
-            ),
-        ) ?? false
-    )
-}
+    return path.replace(/\/+$/, "");
+};
 
-const domainContainsPath = (
-    domain: DomainItem,
-    currentPath: string,
-): boolean => {
-    if (
-        pathMatches(
-            currentPath,
-            domain.path,
-        )
-    ) {
-        return true
+const itemContainsPath = (item: NavigationItem, currentPath: string): boolean => {
+    if (pathMatches(currentPath, item.path)) {
+        return true;
     }
 
-    return (
-        domain.children?.some(item =>
-            itemContainsPath(
-                item,
-                currentPath,
-            ),
-        ) ?? false
-    )
-}
+    return item.children?.some((child) => itemContainsPath(child, currentPath)) ?? false;
+};
 
+const domainContainsPath = (domain: DomainItem, currentPath: string): boolean => {
+    if (pathMatches(currentPath, domain.path)) {
+        return true;
+    }
+
+    return domain.children?.some((item) => itemContainsPath(item, currentPath)) ?? false;
+};
