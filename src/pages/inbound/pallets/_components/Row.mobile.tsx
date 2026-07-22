@@ -13,14 +13,17 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                 nav(pallet.lpn);
             }}
             sx={{
-                borderTop: "1px solid",
-                borderColor: "divider",
+                bgcolor: "background.paper",
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "flex-start",
                 alignItems: "center",
                 gap: ".5rem",
                 py: "0.5rem",
+                px: '.5rem',
+                mx: "1rem",
+                borderRadius: "5px",
+                boxShadow: (t) => t.shadows[3],
                 color: pallet.priority === -1 ? (t) => `${t.palette.action.disabled} !important` : "text.secondary",
             }}>
             <Box

@@ -10,8 +10,8 @@ export const PalletListMobile = () => {
                 display: "flex",
                 flexDirection: "column",
                 overflow: "auto",
-                borderRight: "1px solid",
-                borderColor: "divider",
+                gap: '0.5rem',
+                py: '1rem'
             }}>
             {displayRows.map((r) => {
                 return <RowMobile key={r.lpn} pallet={r} />;

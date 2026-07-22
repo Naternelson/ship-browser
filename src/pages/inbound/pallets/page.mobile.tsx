@@ -16,19 +16,21 @@ export const PalletsPageMobile = () => {
                 display: "flex",
                 flexDirection: "column",
             }}>
-            <Box
-                sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    padding: "0.5rem 1rem",
-                    gap: "1rem",
-                    alignItems: "center",
-                }}>
-                <Typography variant="subtitle1">Inbound Pallets</Typography>
-                <Typography variant="caption">{ctx.displayRows.length.toLocaleString()} Results</Typography>
+            <Box sx={{display: 'flex', flexDirection: 'column', bgcolor: 'background.paper'}}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        padding: "0.5rem 1rem",
+                        gap: "1rem",
+                        alignItems: "center",
+                    }}>
+                    <Typography variant="subtitle1">Inbound Pallets</Typography>
+                    <Typography variant="caption">{ctx.displayRows.length.toLocaleString()} Results</Typography>
+                </Box>
+                <ActionbarMobile />
+                <FilterBarMobile />
             </Box>
-            <ActionbarMobile />
-            <FilterBarMobile />
             <Box
                 sx={{
                     flex: 1,
