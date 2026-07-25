@@ -4,19 +4,14 @@ import { Box, ButtonBase, Typography } from "@mui/material";
 
 export const TabbarMobile = () => {
     const location = useLocation();
-    const activeTab = defaultTabs.find((t) => {
-        if (t.path === ".")
-            return matchPath(
-                {
-                    path: "/inbound",
-                    end: true,
-                },
-                location.pathname,
-            );
+
+    const activeTab = defaultTabs.find((tab) => {
+        const path = tab.path === "." ? "/inbound" : `/inbound/${tab.path}`;
+
         return matchPath(
             {
-                path: `/inbound/${t.path}`,
-                end: false,
+                path,
+                end: tab.path === ".",
             },
             location.pathname,
         );
@@ -24,46 +19,55 @@ export const TabbarMobile = () => {
 
     return (
         <Box
+            component="nav"
             sx={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "stretch",
-                bottom: 0,
+                position: "fixed",
                 left: 0,
                 right: 0,
-                overflowX: "auto",
+                bottom: 0,
+                zIndex: (theme) => theme.zIndex.appBar,
+                display: "flex",
+                bgcolor: "background.paper",
                 borderTop: "1px solid",
                 borderColor: "divider",
+                pb: "env(safe-area-inset-bottom)",
+                boxShadow: 4,
+                paddingBottom: "1rem",
             }}>
-            {defaultTabs.map((t) => {
-                const Icon = t.icon && t.icon;
+            {defaultTabs.map((tab) => {
+                const Icon = tab.icon;
+
                 return (
                     <ButtonBase
-                        className={activeTab?.id === t.id ? "active" : ""}
                         component={NavLink}
-                        to={t.path}
-                        end={t.path === "."}
-                        disabled={t.disabled}
-                        key={t.id}
+                        to={tab.path}
+                        end={tab.path === "."}
+                        disabled={tab.disabled}
+                        key={tab.id}
                         sx={{
-                            bgcolor: "background.default",
                             flex: 1,
+                            minWidth: 64,
+                            minHeight: 64,
+                            py: 1,
                             display: "flex",
                             flexDirection: "column",
-                            alignItems: "center",
-                            minWidth: "60px",
+                            justifyContent: "center",
+                            gap: 0.25,
                             color: "text.secondary",
-                            overflow: "hidden",
-                            padding: "0.5rem",
-                            paddingBottom: "2rem",
                             "&.active": {
                                 color: "primary.main",
                             },
                         }}>
                         {Icon && <Icon fontSize="small" />}
-                        <Typography variant="caption" sx={{ color: "inherit" }}>
-                            {t.label}
+
+                        <Typography
+                            variant="caption"
+                            color="inherit"
+                            sx={{
+                                lineHeight: 1.2,
+                                color: activeTab?.id === tab.id ? "primary.main" : "text.secondary",
+                            }}>
+                            {tab.label}
                         </Typography>
                     </ButtonBase>
                 );

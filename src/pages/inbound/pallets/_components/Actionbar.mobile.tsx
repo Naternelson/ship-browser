@@ -18,7 +18,7 @@ export const ActionbarMobile = () => {
         <Box
             sx={{
                 position: "absolute",
-                bottom: "1rem",
+                bottom: "2rem",
                 right: "1rem",
                 display: "flex",
                 flexDirection: "column",
@@ -43,17 +43,7 @@ export const ActionbarMobile = () => {
                         )
                         `,
                 }}></Box>
-            <IconButton
-                sx={{
-                    color: "info.main",
-                    minWidth: "25px",
-                    aspectRatio: 1,
-                    borderRadius: "50%",
-                    bgcolor: "background.default",
-                    boxShadow: (t) => t.shadows[2],
-                }}>
-                <Add />
-            </IconButton>
+
             <IconButton
                 onClick={() => {
                     setOpen(true);
@@ -68,6 +58,17 @@ export const ActionbarMobile = () => {
                     "&:active, &:focus": { bgcolor: "secondary.main" },
                 }}>
                 <Search />
+            </IconButton>
+            <IconButton
+                sx={{
+                    color: "info.main",
+                    minWidth: "25px",
+                    aspectRatio: 1,
+                    borderRadius: "50%",
+                    bgcolor: "background.default",
+                    boxShadow: (t) => t.shadows[2],
+                }}>
+                <Add />
             </IconButton>
             <Dialog
                 // fullScreen

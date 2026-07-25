@@ -4,18 +4,19 @@ import { RowMobile } from "./Row.mobile";
 
 export const PalletListMobile = () => {
     const { displayRows } = usePalletsPage();
+
     return (
         <Box
             sx={{
                 display: "flex",
                 flexDirection: "column",
-                overflow: "auto",
-                gap: '0.5rem',
-                py: '1rem'
+                gap: 1,
+                px: 2,
+                py: 1.5,
             }}>
-            {displayRows.map((r) => {
-                return <RowMobile key={r.lpn} pallet={r} />;
-            })}
+            {displayRows.map((pallet) => (
+                <RowMobile key={pallet.lpn} pallet={pallet} />
+            ))}
         </Box>
     );
 };

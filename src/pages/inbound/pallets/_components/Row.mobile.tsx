@@ -5,94 +5,108 @@ import { Block, LocalFireDepartmentRounded, Warning } from "@mui/icons-material"
 import { useNavigate } from "react-router";
 
 export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
-    const nav = useNavigate();
+    const navigate = useNavigate();
+    const disabled = pallet.priority === -1;
+
     return (
         <MobileButtonBase
-            onClick={() => {
-                nav(pallet.lpn);
-            }}
+            onClick={() => navigate(pallet.lpn)}
             sx={{
-                bgcolor: "background.paper",
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "flex-start",
+                width: "100%",
+                display: "grid",
+                gridTemplateColumns: "32px minmax(0, 1fr) auto",
                 alignItems: "center",
-                gap: ".5rem",
-                py: "0.5rem",
-                px: ".5rem",
-                mx: "1rem",
-                borderRadius: "5px",
-                boxShadow: (t) => t.shadows[3],
-                color: pallet.priority === -1 ? (t) => `${t.palette.action.disabled} !important` : "text.secondary",
+                gap: 1.5,
+                px: 1.5,
+                py: 1.25,
+                borderRadius: 2,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                boxShadow: 1,
+                textAlign: "left",
+                opacity: disabled ? 0.58 : 1,
             }}>
             <Box
                 sx={{
                     display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    padding: "0.5rem",
-                    gap: "0.5rem",
-                    mx: "1rem",
+                    justifyContent: "center",
+                    alignSelf: "stretch",
+                    pt: 0.25,
                 }}>
                 <Priority priority={pallet.priority} />
-                <Typography
-                    variant="subtitle1"
-                    sx={{ color: pallet.priority === -1 ? "text.disabled" : "text.secondary", lineHeight: 1 }}>
-                    {pallet.palletId}
+            </Box>
+
+            <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap color="text.primary">
+                    {pallet.name}
                 </Typography>
-                <Typography
-                    variant="caption"
-                    sx={{ color: pallet.priority === -1 ? "text.disabled" : "text.secondary" }}>
-                    {pallet.qtyExpected} Cases
+
+                <Typography variant="caption" color="text.secondary" noWrap>
+                    {pallet.palletId} · {pallet.sku}
+                </Typography>
+
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                    {pallet.qtyExpected.toLocaleString()} cases
                 </Typography>
             </Box>
+
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.25rem",
-                    flex: 1,
+                    alignItems: "flex-end",
+                    gap: 0.75,
                     minWidth: 0,
-                    overflow: "hidden",
                 }}>
-                <Typography
-                    variant="body1"
-                    noWrap
-                    sx={{
-                        color: pallet.priority === -1 ? "text.disabled" : "text.secondary",
-                        width: "100%",
-                        textAlign: "left",
-                        fontWeight: "bold",
-                    }}>
-                    {pallet.name}
+                <Typography variant="caption" color="text.secondary" noWrap>
+                    {pallet.state}
                 </Typography>
 
-                <Typography
-                    variant="subtitle2"
-                    noWrap
+                <Chip
+                    label={pallet.location}
+                    size="small"
+                    variant="outlined"
                     sx={{
-                        width: "100%",
-                        textAlign: "left",
-                    }}>
-                    {pallet.sku}
-                </Typography>
-            </Box>
-            <Box sx={{ px: 1, alignItems: "flex-end", display: "flex", flexDirection: "column", gap: ".5rem" }}>
-                <Typography variant="caption">{pallet.state}</Typography>
-                <Chip label={pallet.location} />
+                        maxWidth: 100,
+                        "& .MuiChip-label": {
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                        },
+                    }}
+                />
             </Box>
         </MobileButtonBase>
     );
 };
 
 const Priority = ({ priority }: { priority: number }) => {
-    if (priority === -1) return <Block fontSize="small" sx={{ color: "text.secondary" }} />;
-    if (priority === 0) return <Warning fontSize="small" color={"error"} />;
-    if (priority === 1) return <LocalFireDepartmentRounded fontSize="small" color="warning" />;
+    if (priority === -1) {
+        return <Block fontSize="small" color="disabled" />;
+    }
+
+    if (priority === 0) {
+        return <Warning fontSize="small" color="error" />;
+    }
+
+    if (priority === 1) {
+        return <LocalFireDepartmentRounded fontSize="small" color="warning" />;
+    }
+
     return (
-        <Typography variant="h3" sx={{ color: "text.secondary", lineHeight: 1 }}>
-            {priority.toLocaleString()}
-        </Typography>
+        <Box
+            sx={{
+                minWidth: 24,
+                height: 24,
+                px: 0.75,
+                borderRadius: 999,
+                display: "grid",
+                placeItems: "center",
+                bgcolor: "action.hover",
+            }}>
+            <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                {priority}
+            </Typography>
+        </Box>
     );
 };

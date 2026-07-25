@@ -1,59 +1,56 @@
 import { ArrowDropDown, Warning } from "@mui/icons-material";
 import { Box, ButtonBase, Chip, Typography } from "@mui/material";
-
 export const FilterBarMobile = () => {
     return (
         <Box
             sx={{
-                paddingBottom: "0.5rem",
-                gap: "0.5rem",
                 display: "flex",
-                flexDirection: "column",
-                zIndex: 1,
+                alignItems: "center",
+                gap: 1,
+                overflowX: "auto",
+                pb: 0.5,
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": {
+                    display: "none",
+                },
             }}>
-            <Box sx={{ height: "40ox", overflowX: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <ButtonBase
-                    sx={{
-                        display: "flex",
-                        borderRadius: "10px",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        px: "0.552846rem",
-                        minWidth: "100px",
-                        py: ".25rem",
-                        color: "text.disabled",
-                        border: "1px solid",
-                        justifyContent: "center",
-                        gap: ".5rem",
-                    }}>
-                    <Typography variant="button">Status</Typography>
-                    <ArrowDropDown />
-                </ButtonBase>
-                <ButtonBase
-                    sx={{
-                        display: "flex",
-                        borderRadius: "10px",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        px: "0.552846rem",
-                        minWidth: "100px",
-                        py: ".25rem",
-                        color: "text.disabled",
-                        border: "1px solid",
-                        justifyContent: "center",
-                        gap: ".5rem",
-                    }}>
-                    <Typography variant="button">Location</Typography>
-                    <ArrowDropDown />
-                </ButtonBase>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", overflowX: "auto" }}>
-                <Chip
-                    label={"Criticals"}
-                    icon={<Warning sx={{ fontSize: "14px", color: "text.disabled" }} />}
-                    onDelete={() => {}}
-                />
-            </Box>
+            <ButtonBase
+                sx={{
+                    flexShrink: 0,
+                    height: 36,
+                    px: 1.5,
+                    borderRadius: 999,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    color: "text.secondary",
+                    gap: 0.5,
+                }}>
+                <Typography variant="button">Status</Typography>
+                <ArrowDropDown fontSize="small" />
+            </ButtonBase>
+
+            <ButtonBase
+                sx={{
+                    flexShrink: 0,
+                    height: 36,
+                    px: 1.5,
+                    borderRadius: 999,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    color: "text.secondary",
+                    gap: 0.5,
+                }}>
+                <Typography variant="button">Location</Typography>
+                <ArrowDropDown fontSize="small" />
+            </ButtonBase>
+
+            <Chip
+                size="small"
+                label="Critical"
+                icon={<Warning fontSize="small" />}
+                onDelete={() => {}}
+                sx={{ flexShrink: 0 }}
+            />
         </Box>
     );
 };
