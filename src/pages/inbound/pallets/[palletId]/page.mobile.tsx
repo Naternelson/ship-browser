@@ -32,6 +32,7 @@ export const InboundPalletDetailMobilePage = () => {
                 minHeight: 0,
                 bgcolor: "background.default",
                 overflow: "hidden",
+                paddingBottom: "2rem",
             }}>
             <PageHeader />
 
@@ -546,8 +547,7 @@ const TitleCard = ({ pallet }: { pallet: InboundPalletType }) => {
                         fontWeight: 800,
                         lineHeight: 1.15,
                         textAlign: "center",
-                        fontSize: '1.5rem'
-                        
+                        fontSize: "1.5rem",
                     }}>
                     {pallet.palletId}
                 </Typography>
