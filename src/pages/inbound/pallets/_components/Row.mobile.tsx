@@ -2,13 +2,12 @@ import { Box, Chip, Typography } from "@mui/material";
 import type { InboundPalletType } from "../types";
 import { MobileButtonBase } from "../../../../_components/MobileButton";
 import { Block, LocalFireDepartmentRounded, Warning } from "@mui/icons-material";
-import { NavLink, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
     const nav = useNavigate();
     return (
         <MobileButtonBase
-            component={NavLink}
             onClick={() => {
                 nav(pallet.lpn);
             }}
@@ -20,7 +19,7 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                 alignItems: "center",
                 gap: ".5rem",
                 py: "0.5rem",
-                px: '.5rem',
+                px: ".5rem",
                 mx: "1rem",
                 borderRadius: "5px",
                 boxShadow: (t) => t.shadows[3],
@@ -78,10 +77,11 @@ export const RowMobile = ({ pallet }: { pallet: InboundPalletType }) => {
                     }}>
                     {pallet.sku}
                 </Typography>
-
+            </Box>
+            <Box sx={{ px: 1, alignItems: "flex-end", display: "flex", flexDirection: "column", gap: ".5rem" }}>
+                <Typography variant="caption">{pallet.state}</Typography>
                 <Chip label={pallet.location} />
             </Box>
-            <Box sx={{ px: 1, alignItems: "center" }}>{pallet.state}</Box>
         </MobileButtonBase>
     );
 };

@@ -1,14 +1,5 @@
 import { Add, Close, Search } from "@mui/icons-material";
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    Slide,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Slide } from "@mui/material";
 import type { TransitionProps } from "@mui/material/transitions";
 import { forwardRef, useState } from "react";
 
@@ -32,8 +23,26 @@ export const ActionbarMobile = () => {
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.5rem",
-                zIndex: 1
+                zIndex: 1,
             }}>
+            <Box
+                sx={{
+                    position: "absolute",
+                    pointerEvents: "none",
+                    top: -300,
+                    left: -200,
+                    right: -200,
+                    bottom: -300,
+                    borderRadius: "50%",
+                    background: (t) => `
+                        radial-gradient(
+                            ellipse 30% 70% at 50% 100%,
+                            ${t.alpha(t.palette.primary.dark, 1)} 0%,
+                            ${t.alpha(t.palette.primary.dark, 0.2)} 45%,
+                            transparent 100%
+                        )
+                        `,
+                }}></Box>
             <IconButton
                 sx={{
                     color: "info.main",
@@ -41,6 +50,7 @@ export const ActionbarMobile = () => {
                     aspectRatio: 1,
                     borderRadius: "50%",
                     bgcolor: "background.default",
+                    boxShadow: (t) => t.shadows[2],
                 }}>
                 <Add />
             </IconButton>
@@ -51,6 +61,7 @@ export const ActionbarMobile = () => {
                 size="large"
                 color="secondary"
                 sx={{
+                    boxShadow: (t) => t.shadows[2],
                     bgcolor: "secondary.dark",
                     color: "white",
                     borderRadius: "50%",
@@ -94,7 +105,9 @@ export const ActionbarMobile = () => {
                         </IconButton>
                     </Box>
                 </DialogTitle>
-                <DialogContent><Box sx={{minHeight: 100}}></Box></DialogContent>
+                <DialogContent>
+                    <Box sx={{ minHeight: 100 }}></Box>
+                </DialogContent>
                 <DialogActions>
                     <Box>
                         <Button

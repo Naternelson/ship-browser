@@ -1,12 +1,8 @@
-import { Box, Button } from "@mui/material";
-import { NavLink } from "react-router";
+import { useMediaQuery } from "@mui/material";
+import { InboundPalletDetailMobilePage } from "./page.mobile";
 
 export const InboundPalletDetailPage = () => {
-    return (
-        <Box>
-            <Button component={NavLink} to={".."} relative="path">
-                Back to List
-            </Button>
-        </Box>
-    );
+    const isSm = useMediaQuery((t) => t.breakpoints.down("md"));
+    if (isSm) return <InboundPalletDetailMobilePage />;
+    return null
 };

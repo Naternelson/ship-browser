@@ -3,14 +3,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { PageContext, type PageContextType } from "./_components/PageContext";
-import { seedPallets } from "./seed";
 import type { ParsedSearch, SortBy } from "./types";
 import { getFilterValues, matchesSearch, parseSearch, sortPallets, stringifySearch } from "./_utils/palletSearch";
 import { PalletsPageMobile } from "./page.mobile";
-
-const sampleData = seedPallets({
-    size: 200,
-});
+import { getSampleData } from "./_sampledata";
 
 export const PalletsPage = () => {
     const [selected, setSelected] = useState(new Set<string>());
@@ -32,7 +28,7 @@ export const PalletsPage = () => {
     }, [sortDirectionParam, sortTypeParam]);
 
     const displayRows = useMemo(() => {
-        const filteredRows = sampleData.filter((pallet) => matchesSearch(pallet, search));
+        const filteredRows = getSampleData().filter((pallet) => matchesSearch(pallet, search));
 
         return sortPallets(filteredRows, sort);
     }, [search, sort]);
@@ -98,7 +94,7 @@ export const PalletsPage = () => {
 
     const contextValue = useMemo<PageContextType>(
         () => ({
-            rows: sampleData,
+            rows: getSampleData(),
             displayRows,
             search,
             sort,

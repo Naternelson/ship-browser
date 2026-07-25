@@ -5,13 +5,11 @@ export const FilterBarMobile = () => {
     return (
         <Box
             sx={{
-                px: "1rem",
                 paddingBottom: "0.5rem",
                 gap: "0.5rem",
                 display: "flex",
                 flexDirection: "column",
-                boxShadow: (t) =>t.shadows[5]
-                ,zIndex: 1 
+                zIndex: 1,
             }}>
             <Box sx={{ height: "40ox", overflowX: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <ButtonBase
@@ -25,10 +23,11 @@ export const FilterBarMobile = () => {
                         py: ".25rem",
                         color: "text.disabled",
                         border: "1px solid",
-                        justifyContent: "flex-start",
+                        justifyContent: "center",
+                        gap: ".5rem",
                     }}>
-                    <ArrowDropDown />
                     <Typography variant="button">Status</Typography>
+                    <ArrowDropDown />
                 </ButtonBase>
                 <ButtonBase
                     sx={{
@@ -41,10 +40,11 @@ export const FilterBarMobile = () => {
                         py: ".25rem",
                         color: "text.disabled",
                         border: "1px solid",
-                        justifyContent: "flex-start",
+                        justifyContent: "center",
+                        gap: ".5rem",
                     }}>
-                    <ArrowDropDown />
                     <Typography variant="button">Location</Typography>
+                    <ArrowDropDown />
                 </ButtonBase>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", overflowX: "auto" }}>

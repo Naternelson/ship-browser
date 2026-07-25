@@ -14,21 +14,42 @@ export const PalletsPageMobile = () => {
                 overflow: "hidden",
                 minHeight: 0,
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: { xs: "column", sm: "row", md: "column" },
             }}>
-            <Box sx={{display: 'flex', flexDirection: 'column', bgcolor: 'background.paper'}}>
+            <ActionbarMobile />
+            <Box
+                sx={{
+                    paddingTop: "1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    bgcolor: (t) => t.alpha(t.palette.primary.dark, 0.1),
+                    maxWidth: {
+                        xs: "100%",
+                        sm: "50%",
+                        md: "100%",
+                    },
+                    borderBottomWidth: { xs: 1, sm: 0, md: 1 },
+                    borderBottomStyle: "solid",
+                    borderBottomColor: "divider",
+
+                    borderRightWidth: { xs: 0, sm: 1, md: 0 },
+                    borderRightStyle: "solid",
+                    borderRightColor: "divider",
+
+                    px: "1rem",
+                    justifyContent: "center",
+                    gap: ".5rem",
+                }}>
                 <Box
                     sx={{
                         display: "flex",
                         flexDirection: "row",
-                        padding: "0.5rem 1rem",
                         gap: "1rem",
                         alignItems: "center",
                     }}>
                     <Typography variant="subtitle1">Inbound Pallets</Typography>
                     <Typography variant="caption">{ctx.displayRows.length.toLocaleString()} Results</Typography>
                 </Box>
-                <ActionbarMobile />
                 <FilterBarMobile />
             </Box>
             <Box
