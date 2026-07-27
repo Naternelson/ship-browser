@@ -1,6 +1,6 @@
-import { Box } from "@mui/material";
-import { TabbarMobile } from "./_components/Tabbar.mobile";
-import { Outlet } from "react-router";
+import { Box } from '@mui/material'
+import { TabbarMobile } from './_components/Tabbar.mobile'
+import { Outlet } from 'react-router'
 
 export const LayoutMobile = () => {
     return (
@@ -8,16 +8,19 @@ export const LayoutMobile = () => {
             sx={{
                 flex: 1,
 
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
                 minHeight: 0,
-                position: "relative",
-            }}>
-            <Box sx={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" }}>
+                position: 'relative',
+                pb: 'env(safe-area-inset-bottom)',
+                pt: 'env(safe-area-inset-top)'
+            }}
+        >
+            <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <Outlet />
             </Box>
             <TabbarMobile />
         </Box>
-    );
-};
+    )
+}

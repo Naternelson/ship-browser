@@ -60,7 +60,6 @@ export const PalletsPageMobile = () => {
                     flexDirection: 'column',
 
                     position: 'relative',
-                    pb: ' env(safe-area-inset-bottom)',
                 }}
             >
                 <Box sx={{ flex: '1', minHeight: '0', overflow: 'auto' }}>

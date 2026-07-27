@@ -25,7 +25,6 @@ export const TabbarMobile = () => {
                 bgcolor: 'background.paper',
                 borderTop: '1px solid',
                 borderColor: 'divider',
-                pb: 'env(safe-area-inset-bottom)',
                 boxShadow: 4,
             }}
         >
