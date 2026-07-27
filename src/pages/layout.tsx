@@ -32,7 +32,7 @@ const MobileLayout = () => {
         setOpen(state);
     };
     return (
-        <Box sx={{ height: "100vh", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <Box sx={{ height: "100svh", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <MobileNavigation onChangeEvent={onOpen} />
             <Box
                 sx={{
